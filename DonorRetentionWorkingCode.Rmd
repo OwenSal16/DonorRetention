@@ -10,7 +10,29 @@ library("tidyverse")
 ```
 
 ```{r}
-read.csv("1_4_Relationship_Type.csv")
-read.csv("1_5a_Participation_History.csv")
+Rel_Type <- read.csv("1_4_Relationship_Type.csv")
+Part_Hist <- read.csv("1_5a_Participation_History.csv")
+DH1 <- read.csv("DonorHistoryFirstThree")
+DH2 <- read.csv("DonorHistorySecondThree")
+DH3 <- read.csv("DonorHistoryThirdThree")
+DH4 <- read.csv("DonorHistoryFourthThree")
+DH5 <- read.csv("DonorHistoryFifthThree")
+DH6 <- read.csv("DonorHistorySixthThree")
+DH7 <- read.csv("DonorHistoryLastTwo")
 ```
+
+```{r}
+DonorHistory <- cbind(DH1, DH2, DH3, DH4, DH5, DH6, DH7)
+
+DonorHistory_Clean <- DonorHistory %>%
+  select(!3)
+
+Rel_Type_Test <- merge(Rel_Type, Rel_Type, by = "Entity.ID")
+
+Rel_Type_Test2 <- Rel_Type gwrap
+  
+```
+
+
+
 
