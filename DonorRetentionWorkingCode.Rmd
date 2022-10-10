@@ -53,3 +53,10 @@ DonorHistory_Clean <- DonorHistory %>%
   left_join(Rel_Type_Split) %>%
   left_join(Part_Hist_Split)
 ```
+
+### Create active donor and retention variables
+```{r}
+DonorHistoryRetention <- DonorHistory %>%
+  mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0))
+```
+
