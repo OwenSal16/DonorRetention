@@ -5,10 +5,12 @@ date: "10/5/2022"
 output: html_document
 ---
 
+### Load in Libraries
 ```{r}
 library("tidyverse")
 ```
 
+### Read in Data
 ```{r}
 Rel_Type <- read.csv("1_4_Relationship_Type.csv")
 Part_Hist <- read.csv("1_5a_Participation_History.csv")
@@ -21,21 +23,33 @@ DH6 <- read.csv("DonorHistorySixthThree")
 DH7 <- read.csv("DonorHistoryLastTwo")
 ```
 
+### Fix relationship spreadsheet
+```{r}
+Rel_Type_Split <- Rel_Type %>%
+  mutate(value = 1) %>%
+  pivot_wider(names_from = Relationship.Type, values_from = value)
+
+Rel_Type_Split[is.na(Rel_Type_Split)] <- 0 
+## https://stackoverflow.com/questions/8161836/how-do-i-replace-na-values-with-zeros-in-an-r-dataframe%5C
+```
+
+## Fix participationship spreadsheet
+```{r}
+Part_Hist_Split <- Part_Hist %>%
+  select(!c(4:7)) %>%
+  mutate(Participation.Category = case_when(Participation.Category == "" ~ "Uncategorized",
+                                            TRUE ~ Participation.Category)) %>%
+  pivot_wider(names_from = Participation.Category, values_from = Activity.Name, values_fn = list)
+```
+
+### Clean and add data to Donor History
 ```{r}
 DonorHistory <- cbind(DH1, DH2, DH3, DH4, DH5, DH6, DH7)
 
+remove("DH1", "DH2", "DH3", "DH4", "DH5", "DH6", "DH7")
+
 DonorHistory_Clean <- DonorHistory %>%
-  select(!3)
-
-Rel_Type_Test <- merge(Rel_Type, Rel_Type, by = "Entity.ID")
-
-Rel_Type_Test2 <- Rel_Type gwrap
-  
+  select(!3) %>%
+  left_join(Rel_Type_Split) %>%
+  left_join(Part_Hist_Split)
 ```
-
-```{r}
-## Rachel test
-```
- 
-
-
