@@ -177,7 +177,7 @@ ggplot(aes(x=Processing.Date, y=Credit.Amount, group=1),size=1, data= temp) +
 
 
 
-
+ 
 
 # random forest
 ```{r random forest, eval=FALSE}
