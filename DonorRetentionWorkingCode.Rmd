@@ -60,3 +60,8 @@ DonorHistoryRetention <- DonorHistory %>%
   mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0))
 ```
 
+```{r}
+ggplot(data = DonorHistory_Clean, aes(x = log10(Credit.Amount))) +
+  geom_histogram()
+```
+
