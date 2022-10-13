@@ -147,20 +147,7 @@ ggplot(aes(x=Processing.Date1, y=Credit.Amount, group=1),size=1, data= temp) +
   theme(panel.background = element_rect(fill="snow"))
 
 # for better idea of time of year most popular for donations, look at one year at a time
-  
-ggplot(aes(x=Processing.Date, y=Credit.Amount, group=1),size=1, data= temp) +
-  geom_line(color="blue") +
-  scale_y_continuous(name="Case Count", labels=scales::comma)+
-  scale_x_date(breaks=waiver(), name="Date", limits = ())+
-  ggtitle("Credit Amount Over Time",
-          subtitle = "subtitle")+
-  theme_stata(scheme = "s1mono") +
-  scale_colour_stata("mono")+
-  theme(plot.title = element_text(hjust=0.5),
-        plot.subtitle = element_text(hjust=0.5)) +
-  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
-        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45)) +
-  theme(panel.background = element_rect(fill="snow"))
+
 ```
 
 
