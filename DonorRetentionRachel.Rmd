@@ -181,6 +181,7 @@ temp3 <- DonorHistory_Clean %>%
   mutate(meanCreditAmount=mean(Credit.Amount))
 
 ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp3) +  
+  geom_point(size=2) +
   geom_line(color="blue") +
   labs(x="Month", y="Credit Amount")+
   scale_y_continuous(labels=scales::comma)+
