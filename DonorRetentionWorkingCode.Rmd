@@ -56,7 +56,10 @@ remove("DH1", "DH2", "DH3", "DH4", "DH5", "DH6", "DH7")
 DonorHistory_Clean <- DonorHistory %>%
   select(!3) %>%
   left_join(Rel_Type_Split) %>%
-  left_join(Part_Hist_Split)
+  left_join(Part_Hist_Split) %>%
+  #left_join(Addresses) %>%
+  #left_join(Majors) %>%
+  filter(!is.na(Entity.ID))
 ```
 
 ### Create active donor and retention variables
@@ -76,7 +79,7 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 ```
 
 ```{r}
-DonorHistory_Test <- DonorHistory_Clean[1:100000,]
+DonorHistory_Test <- DonorHistory_Clean[896156:896156,]
 a <- Sys.time()
 # editing
 findYears <- function(e) {
