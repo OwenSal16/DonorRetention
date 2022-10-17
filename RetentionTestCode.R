@@ -78,3 +78,42 @@ RetainedThreeYears <- function() {
 }
 
 RetainedThreeYears
+
+RetainedByYear <- function() {
+  fulldata <- data.frame(matrix(ncol = 5, nrow = 0))
+  for (e in uniqueEntity) {
+    entityYearsVector <- unique(findYears(e))
+    for (i in 1:length(entityYearsVector)) {
+      if (i == 1) {
+        OneYear = F
+        ThreeYear = F
+        FiveYear = F
+      }
+      else {
+        if(entityYearsVector[i] - entityYearsVector[i-1] == 1) {
+          OneYear = T
+        } else {
+          OneYear = F
+        }
+        
+        if (entityYearsVector[i] - entityYearsVector[i-1] <= 3){
+          ThreeYear = T
+        } else {
+          ThreeYear = F
+        }
+        
+        if (entityYearsVector[i] - entityYearsVector[i-1] <= 5){
+          FiveYear = T
+        } else {
+          FiveYear = F
+        }
+      }
+      
+      entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
+      fulldata <- rbind(fulldata, entYear)
+    }
+  }
+  fulldata
+}
+
+byYear <- RetainedByYear()
