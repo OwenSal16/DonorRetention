@@ -27,6 +27,8 @@ DH4 <- read.csv("DonorHistoryFourthThree")
 DH5 <- read.csv("DonorHistoryFifthThree")
 DH6 <- read.csv("DonorHistorySixthThree")
 DH7 <- read.csv("DonorHistoryLastTwo")
+Addresses <- read.csv("1_2a_Addresses.csv")
+Majors <- read.csv("1_3_Degrees.csv")
 ```
 
 ### Fix relationship spreadsheet
@@ -57,7 +59,9 @@ remove("DH1", "DH2", "DH3", "DH4", "DH5", "DH6", "DH7")
 DonorHistory_Clean <- DonorHistory %>%
   select(!3) %>%
   left_join(Rel_Type_Split) %>%
-  left_join(Part_Hist_Split)
+  left_join(Part_Hist_Split) %>%
+  left_join(Addresses) %>%
+  left_join(Majors)
 ```
 
 
@@ -81,38 +85,36 @@ ggplot(DonorHistory_Clean, aes(fill=Designation.Purpose, y=Credit.Amount, x=Fisc
   scale_fill_brewer(palette="Set1") +
   scale_y_continuous(labels=scales::dollar_format())
 
+
+library(RColorBrewer)
+nb.cols <- 22
+mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
+
 # Stacked bar graph- credit amount by designation purpose colored by year
 # More red = more recent donations
-ggplot(DonorHistory_Clean, aes(fill=Fiscal.Year, y=Credit.Amount, x=Designation.Purpose)) + 
+ggplot(DonorHistory_Clean, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.Purpose)) + 
   geom_bar(position="stack", stat="identity") +
-  scale_fill_gradient(low = "lightyellow", high="red") +
+  scale_fill_manual(values= rev(mycolors)) +
   scale_y_continuous(labels=scales::dollar_format())
 ```
 
 
 ```{r}
-# new dataset grpuped by f.year and designation to fix order of color
+# new dataset grpuped by f.year and designation to fix order of color 
+# Didn't work
 donorYr <- DonorHistory_Clean %>%
   group_by(Fiscal.Year)
 
-# Stacked bar graph- credit amount by designation school colored by year
-# More red = more recent donations
-ggplot(donorYr, aes(fill=Fiscal.Year, y=Credit.Amount, x=Designation.School.Unit)) + 
-  geom_bar(position="stack", stat="identity") +
-  scale_fill_gradientn(colours = heat.colors(5), trans = "reverse") +
-  scale_y_continuous(labels=scales::dollar_format())
-
-# new dataset grpuped by f.year and designation to fix order of color
+# make Fiscal.Year discrete to fix order of color
 library(RColorBrewer)
-#donorYr2 <- donorYr[which(donorYr$Fiscal.Year > 2010),]
 nb.cols <- 22
-mycolors <- colorRampPalette(brewer.pal(8, "Set1"))(nb.cols)
+mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
 
 # Stacked bar graph- credit amount by designation school colored by year
 # More red = more recent donations
 ggplot(donorYr, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
   geom_bar(position="stack", stat="identity") +
-  scale_fill_manual(values = mycolors) +
+  scale_fill_manual(values = rev(mycolors)) +
   scale_y_continuous(labels=scales::dollar_format())
 ```
 
@@ -240,10 +242,16 @@ ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp4) +
 
 #zip codes and majors info coming soon - predictors
 
-#
+head(Addresses)
+head(Majors)
+summary(factor(Addresses$State))
+summary(factor(Majors$School.of.Graduation))
 ```
 
 
+```{r}
+
+```
 
  
 
