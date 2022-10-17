@@ -16,6 +16,8 @@ library(randomForest)
 ```{r}
 Rel_Type <- read.csv("1_4_Relationship_Type.csv")
 Part_Hist <- read.csv("1_5a_Participation_History.csv")
+Addresses <- read.csv("1_2a_Addresses.csv")
+Majors <- read.csv("1_3_Degrees.csv")
 DH1 <- read.csv("DonorHistoryFirstThree")
 DH2 <- read.csv("DonorHistorySecondThree")
 DH3 <- read.csv("DonorHistoryThirdThree")
@@ -23,6 +25,7 @@ DH4 <- read.csv("DonorHistoryFourthThree")
 DH5 <- read.csv("DonorHistoryFifthThree")
 DH6 <- read.csv("DonorHistorySixthThree")
 DH7 <- read.csv("DonorHistoryLastTwo")
+
 ```
 
 ### Fix relationship spreadsheet
@@ -72,4 +75,60 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
   left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
 ```
 
+```{r}
+DonorHistory_Test <- DonorHistory_Clean[1:100000,]
+a <- Sys.time()
+# editing
+findYears <- function(e) {
+  entityYears <- DonorHistory_Test %>%
+    filter(Entity.ID == e) %>%
+    select(Fiscal.Year) %>%
+    arrange(Fiscal.Year)
+  entityYearsVector = as.vector(entityYears[,1])
+  entityYearsVector
+}
 
+
+RetainedByYear <- function() {
+  uniqueEntity <- unique(DonorHistory_Test$Entity.ID)
+  fulldata <- data.frame(matrix(ncol = 5, nrow = 0))
+  for (e in uniqueEntity) {
+    entityYearsVector <- unique(findYears(e))
+    for (i in 1:length(entityYearsVector)) {
+      if (i == 1) {
+        OneYear = F
+        ThreeYear = F
+        FiveYear = F
+      }
+      else if(entityYearsVector[i] - entityYearsVector[i-1] == 1) {
+        OneYear = T
+        ThreeYear = T
+        FiveYear = T
+      }
+      else if (entityYearsVector[i] - entityYearsVector[i-1] <= 3) {
+        ThreeYear = T
+        FiveYear = T
+        OneYear = F
+      }
+      else if (entityYearsVector[i] - entityYearsVector[i-1] <= 5) {
+        FiveYear = T
+        ThreeYear = F
+        OneYear = F
+      }
+      else {
+        FiveYear = F
+        ThreeYear = F
+        OneYear = F
+      }}
+    
+    entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
+    fulldata <- rbind(fulldata, entYear)
+  }
+  fulldata
+}
+
+byYear <- RetainedByYear()
+head(byYear)
+b <- Sys.time()
+b - a
+```
