@@ -92,12 +92,27 @@ ggplot(DonorHistory_Clean, aes(fill=Fiscal.Year, y=Credit.Amount, x=Designation.
 
 ```{r}
 # new dataset grpuped by f.year and designation to fix order of color
+donorYr <- DonorHistory_Clean %>%
+  group_by(Fiscal.Year)
 
 # Stacked bar graph- credit amount by designation school colored by year
 # More red = more recent donations
-ggplot(DonorHistory_Clean, aes(fill=Fiscal.Year, y=Credit.Amount, x=Designation.School.Unit)) + 
+ggplot(donorYr, aes(fill=Fiscal.Year, y=Credit.Amount, x=Designation.School.Unit)) + 
   geom_bar(position="stack", stat="identity") +
   scale_fill_gradientn(colours = heat.colors(5), trans = "reverse") +
+  scale_y_continuous(labels=scales::dollar_format())
+
+# new dataset grpuped by f.year and designation to fix order of color
+library(RColorBrewer)
+#donorYr2 <- donorYr[which(donorYr$Fiscal.Year > 2010),]
+nb.cols <- 22
+mycolors <- colorRampPalette(brewer.pal(8, "Set1"))(nb.cols)
+
+# Stacked bar graph- credit amount by designation school colored by year
+# More red = more recent donations
+ggplot(donorYr, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
+  geom_bar(position="stack", stat="identity") +
+  scale_fill_manual(values = mycolors) +
   scale_y_continuous(labels=scales::dollar_format())
 ```
 
@@ -122,7 +137,7 @@ ggplot(aes(x=Processing.Date1, y=Credit.Amount, group=1),size=1, data= temp) +
   scale_y_continuous(name="Case Count", labels=scales::comma)+
   scale_x_date(breaks=waiver(), name="Date")+
   ggtitle("Credit Amount Over Time",
-          subtitle = "subtitle")+
+          subtitle = "By Processing Date")+
   theme_stata(scheme = "s1mono") +
   scale_colour_stata("mono")+
   theme(plot.title = element_text(hjust=0.5),
@@ -137,7 +152,7 @@ ggplot(aes(x=Processing.Date1, y=Credit.Amount, group=1),size=1, data= temp) +
   scale_y_continuous(name="Case Count", labels=scales::comma, limits = c(0,10000000))+
   scale_x_date(breaks=waiver(), name="Date")+
   ggtitle("Credit Amount Over Time",
-          subtitle = "subtitle")+
+          subtitle = "By Processing Date")+
   theme_stata(scheme = "s1mono") +
   scale_colour_stata("mono")+
   theme(plot.title = element_text(hjust=0.5),
