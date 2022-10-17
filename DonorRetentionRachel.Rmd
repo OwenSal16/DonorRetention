@@ -152,7 +152,7 @@ ggplot(aes(x=Processing.Date1, y=Credit.Amount, group=1),size=1, data= temp) +
 
 
 ```{r, warning=FALSE}
-# average credit amount by month and year 
+# average credit amount by month and year - processing date
 temp2 <- DonorHistory_Clean %>%
   mutate(Processing_Date  = mdy(Processing.Date),
          Year = year(mdy(Processing.Date)),
@@ -165,7 +165,7 @@ ggplot(aes(x=Processing_Date, y=meanCreditAmount),size=1, data=temp2) +
   labs(x="Year", y="Credit Amount")+
   scale_y_continuous(labels=scales::comma)+
   ggtitle("Average Monthly Credit Amount ", 
-          subtitle ="subtitle")+
+          subtitle ="Based on Processing Date")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
         plot.subtitle = element_text(hjust=0.5)) +
@@ -173,7 +173,7 @@ ggplot(aes(x=Processing_Date, y=meanCreditAmount),size=1, data=temp2) +
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 
 
-#average credit amount by month overall
+#average credit amount by month overall- processing date
 temp3 <- DonorHistory_Clean %>%
   mutate(Processing_Date  = mdy(Processing.Date),
          Month = month(mdy(Processing.Date), label=TRUE, abbr=TRUE)) %>%
@@ -181,11 +181,32 @@ temp3 <- DonorHistory_Clean %>%
   mutate(meanCreditAmount=mean(Credit.Amount))
 
 ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp3) +  
+  geom_point(size=2) +
   geom_line(color="blue") +
   labs(x="Month", y="Credit Amount")+
   scale_y_continuous(labels=scales::comma)+
   ggtitle("Average Monthly Credit Amount ", 
-          subtitle ="subtitle")+
+          subtitle ="Based on Processing Date")+
+  theme_stata()+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5)) +
+  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
+        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
+
+#average credit amount by month overall- transaction date
+temp4 <- DonorHistory_Clean %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
+  group_by(Month) %>%
+  mutate(meanCreditAmount=mean(Credit.Amount))
+
+ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp4) +  
+  geom_point(size=2) +
+  geom_line(color="blue") +
+  labs(x="Month", y="Credit Amount")+
+  scale_y_continuous(labels=scales::comma)+
+  ggtitle("Average Monthly Credit Amount ", 
+          subtitle ="Based on Transaction Date")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
         plot.subtitle = element_text(hjust=0.5)) +

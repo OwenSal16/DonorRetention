@@ -7,7 +7,9 @@ output: html_document
 
 ### Load in Libraries
 ```{r}
-library("tidyverse")
+library(tidyverse)
+library(caret)
+library(randomForest)
 ```
 
 ### Read in Data
@@ -56,12 +58,18 @@ DonorHistory_Clean <- DonorHistory %>%
 
 ### Create active donor and retention variables
 ```{r}
-DonorHistoryRetention <- DonorHistory %>%
-  mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0))
+a <- rle(sort(DonorHistory_Clean$Entity.ID))
+counts <- data.frame(ID=a$values, count=a$lengths)
+
+retainedAtAll <- counts %>%
+  mutate(retainedAtAll = ifelse(count > 1, 1, 0)) %>%
+  select(!count)
+
+## https://stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
+
+DonorHistoryRetention <- DonorHistory_Clean %>%
+  mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0)) %>%
+  left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
 ```
 
-```{r}
-ggplot(data = DonorHistory_Clean, aes(x = log10(Credit.Amount))) +
-  geom_histogram()
-```
 
