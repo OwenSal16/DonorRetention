@@ -16,6 +16,8 @@ library(randomForest)
 ```{r}
 Rel_Type <- read.csv("1_4_Relationship_Type.csv")
 Part_Hist <- read.csv("1_5a_Participation_History.csv")
+Addresses <- read.csv("1_2a_Addresses.csv")
+Majors <- read.csv("1_3_Degrees.csv")
 DH1 <- read.csv("DonorHistoryFirstThree")
 DH2 <- read.csv("DonorHistorySecondThree")
 DH3 <- read.csv("DonorHistoryThirdThree")
@@ -74,7 +76,7 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 ```
 
 ```{r}
-DonorHistory_Test <- DonorHistory_Clean[1:10000,]
+DonorHistory_Test <- DonorHistory_Clean[1:100000,]
 a <- Sys.time()
 
 findYears <- function(e) {
