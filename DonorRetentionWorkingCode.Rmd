@@ -7,7 +7,9 @@ output: html_document
 
 ### Load in Libraries
 ```{r}
-library("tidyverse")
+library(tidyverse)
+library(caret)
+library(randomForest)
 ```
 
 ### Read in Data
@@ -68,14 +70,6 @@ retainedAtAll <- counts %>%
 DonorHistoryRetention <- DonorHistory_Clean %>%
   mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0)) %>%
   left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
-
-corr
 ```
 
-
-
-```{r}
-ggplot(data = DonorHistory_Clean, aes(x = log10(Credit.Amount))) +
-  geom_histogram()
-```
 
