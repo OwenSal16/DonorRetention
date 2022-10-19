@@ -10,6 +10,7 @@ output: html_document
 library(tidyverse)
 library(caret)
 library(randomForest)
+library(lubridate)
 ```
 
 ### Read in Data
@@ -25,10 +26,21 @@ DH4 <- read.csv("DonorHistoryFourthThree")
 DH5 <- read.csv("DonorHistoryFifthThree")
 DH6 <- read.csv("DonorHistorySixthThree")
 DH7 <- read.csv("DonorHistoryLastTwo")
-
+RetentionIndicators <- read.csv("retentionIndicators.csv")
 ```
 
+### Clean retention data
+```{r}
+Retention <- RetentionIndicators %>%
+  mutate(FiscalYear = year(ymd(entityYearsVector.i., truncated = 2)),
+         OneYear = as.numeric(OneYear),
+         ThreeYear = as.numeric(ThreeYear),
+         FiveYear = as.numeric(FiveYear)) %>%
+  select(!entityYearsVector.i.)
 
+RetentionLong <- Retention %>%
+  pivot_longer(cols = c(OneYear, ThreeYear, FiveYear), names_to = "RetainedType", values_to = "RetainedCount")
+```
 
 ### Fix relationship spreadsheet
 ```{r}
@@ -203,3 +215,10 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 # b <- Sys.time()
 # b - a
 ```
+
+### Retention Graphs
+```{r}
+ggplot(data = filter(Retention, FiscalYear > 2009 & FiscalYear < 2023)) +
+  geom_col(aes(x = FiscalYear, y = OneYear))
+```
+
