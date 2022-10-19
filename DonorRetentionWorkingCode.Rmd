@@ -28,6 +28,8 @@ DH7 <- read.csv("DonorHistoryLastTwo")
 
 ```
 
+
+
 ### Fix relationship spreadsheet
 ```{r}
 Rel_Type_Split <- Rel_Type %>%
@@ -38,13 +40,80 @@ Rel_Type_Split[is.na(Rel_Type_Split)] <- 0
 ## https://stackoverflow.com/questions/8161836/how-do-i-replace-na-values-with-zeros-in-an-r-dataframe%5C
 ```
 
-## Fix participationship spreadsheet
+## Fix participation spreadsheet
 ```{r}
 Part_Hist_Split <- Part_Hist %>%
   select(!c(4:7)) %>%
   mutate(Participation.Category = case_when(Participation.Category == "" ~ "Uncategorized",
                                             TRUE ~ Participation.Category)) %>%
   pivot_wider(names_from = Participation.Category, values_from = Activity.Name, values_fn = list)
+```
+
+### Fix addresses spreadsheet
+```{r}
+#select relevant variables
+Addresses <- Addresses %>%
+  mutate(newZip = str_extract(Zip, "\\d+?(?=-)")) %>%
+  select(Entity.ID, newZip, Country) %>%
+  rename(Zip = newZip)
+
+#find duplicate Entities
+b <- rle(sort(Addresses$Entity.ID))
+adCounts <- data.frame(ID=b$values, count=b$lengths)
+dupEID <- adCounts %>%
+  filter(count > 1) 
+
+#subset only duplicates
+DupAd <- Addresses %>%
+  filter(Entity.ID %in% dupEID$ID)
+
+#remove duplicates from full data
+Addresses <- Addresses %>%
+  filter(!(Entity.ID %in% dupEID$ID))
+
+#loop through duplicates and combine matches
+i = 1
+while (i < (nrow(DupAd))) {
+  if(DupAd$Entity.ID[i] == DupAd$Entity.ID[i+1]) {
+    if(is.na(DupAd$Zip[i]) || is.na(DupAd$Zip[i+1])) {
+      if (DupAd$Country[i] == DupAd$Country[i+1]) {
+        DupAd <- DupAd[-c(i),]
+      }
+    } else if(DupAd$Zip[i] == DupAd$Zip[i+1]) {
+      DupAd <- DupAd[-c(i),]
+    }
+  }
+  i = i + 1
+}
+
+#find remaining duplicates(couldn't be combined)
+c <- rle(sort(DupAd$Entity.ID))
+adCounts2 <- data.frame(ID=c$values, count=c$lengths)
+dupEID2 <- adCounts2 %>%
+  filter(count > 1) 
+
+#new subset of non-match duplicates
+DupAd2 <- DupAd %>%
+  filter(Entity.ID %in% dupEID2$ID)
+
+#combined duplicates
+DupAd <- DupAd %>%
+  filter(!(Entity.ID %in% dupEID2$ID))
+
+#add now combined duplicates to original data
+Addresses <- rbind(Addresses, DupAd)
+
+```
+
+###Fix majors spreadsheet
+```{r}
+# Majors_new <- Majors %>%
+#   select(!c(4)) %>%
+#   mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "Uncategorized",
+#                                             TRUE ~ School.of.Graduation)) %>%
+#   mutate(MajorWithYear)
+#   pivot_wider(names_from = School.of.Graduation, values_from = , values_fn = list)
+
 ```
 
 ### Clean and add data to Donor History
@@ -57,7 +126,7 @@ DonorHistory_Clean <- DonorHistory %>%
   select(!3) %>%
   left_join(Rel_Type_Split) %>%
   left_join(Part_Hist_Split) %>%
-  #left_join(Addresses) %>%
+  left_join(Addresses) %>%
   #left_join(Majors) %>%
   filter(!is.na(Entity.ID))
 ```
@@ -78,60 +147,59 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
   left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
 ```
 
+## Code to create retention variables - DO NOT RUN, just pull dataset from GIT
 ```{r}
-DonorHistory_Test <- DonorHistory_Clean[896156:896156,]
-a <- Sys.time()
-# editing
-findYears <- function(e) {
-  entityYears <- DonorHistory_Test %>%
-    filter(Entity.ID == e) %>%
-    select(Fiscal.Year) %>%
-    arrange(Fiscal.Year)
-  entityYearsVector = as.vector(entityYears[,1])
-  entityYearsVector
-}
-
-
-RetainedByYear <- function() {
-  uniqueEntity <- unique(DonorHistory_Test$Entity.ID)
-  fulldata <- data.frame(matrix(ncol = 5, nrow = 0))
-  for (e in uniqueEntity) {
-    entityYearsVector <- unique(findYears(e))
-    for (i in 1:length(entityYearsVector)) {
-      if (i == 1) {
-        OneYear = F
-        ThreeYear = F
-        FiveYear = F
-      }
-      else if(entityYearsVector[i] - entityYearsVector[i-1] == 1) {
-        OneYear = T
-        ThreeYear = T
-        FiveYear = T
-      }
-      else if (entityYearsVector[i] - entityYearsVector[i-1] <= 3) {
-        ThreeYear = T
-        FiveYear = T
-        OneYear = F
-      }
-      else if (entityYearsVector[i] - entityYearsVector[i-1] <= 5) {
-        FiveYear = T
-        ThreeYear = F
-        OneYear = F
-      }
-      else {
-        FiveYear = F
-        ThreeYear = F
-        OneYear = F
-      }}
-    
-    entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
-    fulldata <- rbind(fulldata, entYear)
-  }
-  fulldata
-}
-
-byYear <- RetainedByYear()
-head(byYear)
-b <- Sys.time()
-b - a
+# a <- Sys.time()
+# findYears <- function(e) {
+#   entityYears <- DonorHistory_Clean %>%
+#     filter(Entity.ID == e) %>%
+#     select(Fiscal.Year) %>%
+#     arrange(Fiscal.Year)
+#   entityYearsVector = as.vector(entityYears[,1])
+#   entityYearsVector
+# }
+# 
+# 
+# RetainedByYear <- function() {
+#   uniqueEntity <- unique(DonorHistory_Clean$Entity.ID)
+#   fulldata <- data.frame(matrix(ncol = 5, nrow = 0))
+#   for (e in uniqueEntity) {
+#     entityYearsVector <- unique(findYears(e))
+#     for (i in 1:length(entityYearsVector)) {
+#       if (i == 1) {
+#         OneYear = F
+#         ThreeYear = F
+#         FiveYear = F
+#       }
+#       else if(entityYearsVector[i] - entityYearsVector[i-1] == 1) {
+#         OneYear = T
+#         ThreeYear = T
+#         FiveYear = T
+#       }
+#       else if (entityYearsVector[i] - entityYearsVector[i-1] <= 3) {
+#         ThreeYear = T
+#         FiveYear = T
+#         OneYear = F
+#       }
+#       else if (entityYearsVector[i] - entityYearsVector[i-1] <= 5) {
+#         FiveYear = T
+#         ThreeYear = F
+#         OneYear = F
+#       }
+#       else {
+#         FiveYear = F
+#         ThreeYear = F
+#         OneYear = F
+#       }}
+#     
+#     entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
+#     fulldata <- rbind(fulldata, entYear)
+#   }
+#   fulldata
+# }
+# 
+# byYear <- RetainedByYear()
+# head(byYear)
+# b <- Sys.time()
+# b - a
 ```
