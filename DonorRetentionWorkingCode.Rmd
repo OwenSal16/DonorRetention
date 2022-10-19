@@ -119,12 +119,11 @@ Addresses <- rbind(Addresses, DupAd)
 
 ###Fix majors spreadsheet
 ```{r}
-# Majors_new <- Majors %>%
-#   select(!c(4)) %>%
-#   mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "Uncategorized",
-#                                             TRUE ~ School.of.Graduation)) %>%
-#   mutate(MajorWithYear)
-#   pivot_wider(names_from = School.of.Graduation, values_from = , values_fn = list)
+Majors_new <- Majors %>%
+  select(!c(4)) %>%
+  mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "Uncategorized",
+                                            TRUE ~ School.of.Graduation)) %>%
+  pivot_wider(id_cols= Entity.ID, names_from = School.of.Graduation, values_from = Major, value_fn = list, unused_fn = max)
 
 ```
 
@@ -139,7 +138,7 @@ DonorHistory_Clean <- DonorHistory %>%
   left_join(Rel_Type_Split) %>%
   left_join(Part_Hist_Split) %>%
   left_join(Addresses) %>%
-  #left_join(Majors) %>%
+  left_join(Majors_new) %>%
   filter(!is.na(Entity.ID))
 ```
 
@@ -202,10 +201,10 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 #         FiveYear = F
 #         ThreeYear = F
 #         OneYear = F
-#       }}
-#     
-#     entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
-#     fulldata <- rbind(fulldata, entYear)
+#       }
+#       entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
+#       fulldata <- rbind(fulldata, entYear)
+#     }
 #   }
 #   fulldata
 # }
