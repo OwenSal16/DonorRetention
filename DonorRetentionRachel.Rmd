@@ -190,13 +190,21 @@ library(ggplot2)
 # Focus on Yellow because it relates to scholarships
 ggplot(DonorHistory_Clean, aes(fill=Designation.Purpose, y=Credit.Amount, x=Fiscal.Year)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Donation Amount over Time by Purpose", subtitle = "All Donations")+
+  labs(x="Fiscal Year", y="Credit Amount", fill="Designation Purpose")+
   scale_fill_brewer(palette="Set1") +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format()) +
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5)) 
 
 ggplot(DonorHistory_AF, aes(fill=Designation.Purpose, y=Credit.Amount, x=Fiscal.Year)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Donation Amount over Time by Purpose", subtitle = "Donations < $10,000")+
+  labs(x="Fiscal Year", y="Credit Amount", fill="Designation Purpose")+
   scale_fill_brewer(palette="Set1") +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5)) 
 
 ```
 
@@ -209,23 +217,26 @@ mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
 # More red = more recent donations
 ggplot(DonorHistory_Clean, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.Purpose)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Total Donation Amount by Purpose", subtitle = "All Donations")+
+  labs(x="Designation Purpose", y="Credit Amount", fill="Fiscal Year")+
   scale_fill_manual(values= rev(mycolors)) +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
 
 ggplot(DonorHistory_AF, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.Purpose)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Total Donation Amount by Purpose", subtitle = "Donations < $10,000")+
+  labs(x="Designation Purpose", y="Credit Amount", fill="Fiscal Year")+
   scale_fill_manual(values= rev(mycolors)) +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
 ```
 
 
 
-```{r}
-# new dataset grpuped by f.year and designation to fix order of color 
-# Didn't work
-donorYr <- DonorHistory_AF %>%
-  group_by(Fiscal.Year)
-
+```{r, fig.width=5}
 # make Fiscal.Year discrete to fix order of color
 library(RColorBrewer)
 nb.cols <- 22
@@ -233,30 +244,52 @@ mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
 
 # Stacked bar graph- credit amount by designation school colored by year
 # More red = more recent donations
-ggplot(donorYr, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
+ggplot(DonorHistory_Clean, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Total Donation Amount by School", subtitle = "All Donations")+
+  labs(x="Designation School", y="Credit Amount", fill="Fiscal Year")+
   scale_fill_manual(values = rev(mycolors)) +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
+
+
+ggplot(DonorHistory_AF, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
+  geom_bar(position="stack", stat="identity") +
+  ggtitle("Total Donation Amount by School", subtitle = "Donations < $10,000")+
+  labs(x="Designation School", y="Credit Amount", fill="Fiscal Year")+
+  scale_fill_manual(values = rev(mycolors)) +
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
 ```
 
 
-```{r}
+```{r, fig.width=4}
 # Stacked bar graph- credit amount by transaction type stacked by designation purpose
 # Focus on Yellow because it relates to scholarships
 ggplot(DonorHistory_Clean, aes(fill=Designation.Purpose, y=Credit.Amount, x=Transaction.Type.Code)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Donation Amount per Transaction Type by Purpose", subtitle = "All Donations")+
+  labs(x="Transaction Type", y="Credit Amount", fill="Designation Purpose")+
   scale_fill_brewer(palette="Set1") +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
 
 ggplot(DonorHistory_AF, aes(fill=Designation.Purpose, y=Credit.Amount, x=Transaction.Type.Code)) + 
   geom_bar(position="stack", stat="identity") +
+  ggtitle("Donation Amount per Transaction Type by Purpose", subtitle = "Donations < $10,000")+
+  labs(x="Transaction Type", y="Credit Amount", fill="Designation Purpose")+
   scale_fill_brewer(palette="Set1") +
-  scale_y_continuous(labels=scales::dollar_format())
+  scale_y_continuous(labels=scales::dollar_format())+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5))
 ```
 
 
 
-```{r, fig.height=5, fig.width=10, fig.align='center', warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
 temp <- DonorHistory_AF %>%
   mutate(Processing.Date1  = mdy(Processing.Date))
 
@@ -277,7 +310,7 @@ ggplot(aes(x=Processing.Date1, y=Credit.Amount, group=1),size=1, data= temp) +
 # for better idea of time of year most popular for donations, look at one year at a time
 ```
 
-#ggannotate()
+
 
 ```{r, warning=FALSE}
 # average credit amount by month and year - processing date
@@ -303,9 +336,9 @@ ggplot(aes(x=Transaction_Date, y=meanCreditAmount),size=1, data=temp2) +
 
 ggplot(aes(x=Transaction_Date, y=donationCount),size=1, data=temp2) +  
   geom_line(color="blue") +
-  labs(x="Year", y="Credit Amount")+
+  labs(x="Year", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
-  ggtitle("Average Monthly Credit Amount ", 
+  ggtitle("Average Monthly Donation Count", 
           subtitle ="Based on Transaction Date")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
@@ -331,7 +364,7 @@ ggplot(aes(x=Transaction_Date, y=meanCreditAmount),size=1, data=temp2) +
 
 ggplot(aes(x=Transaction_Date, y=donationCount),size=1, data=temp2) +  
   geom_line(color="blue") +
-  labs(x="Year", y="Credit Amount")+
+  labs(x="Year", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
   scale_x_date(limits = as.Date(c("2017-01-01","2023-04-30")))+
   ggtitle("Average Monthly Donation Count ", 
@@ -351,28 +384,40 @@ temp2 <- DonorHistory_AF %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
          Year = year(mdy(Transaction.Date)),
          Month = month(mdy(Transaction.Date))) %>%
-  group_by(Year) %>%
+  group_by(Fiscal.Year) %>%
   mutate(meanCreditAmount=mean(Credit.Amount),
          donationCount = n())
 
-ggplot(aes(x=Transaction_Date, y=meanCreditAmount),size=1, data=temp2) +  
+ggplot(aes(x=Fiscal.Year, y=meanCreditAmount),size=1, data=temp2) + 
+  geom_point(size=1) +
   geom_line(color="blue") +
   labs(x="Year", y="Credit Amount")+
   scale_y_continuous(labels=scales::comma)+
-  ggtitle("Average Monthly Credit Amount ", 
-          subtitle ="Based on Transaction Date")+
+  scale_x_continuous(limits = (c(2002,2022)), n.breaks = 11)+
+  ggtitle("Average Yearly Credit Amount ", 
+          subtitle ="Based on Fiscal Year")+
+  geom_segment(aes(x=2008, xend=2008, y=0, yend=250), linetype=2) +
+  annotate(geom = "text", x = 2008, y = 260, label = "Market Crash", hjust = "right")+
+  geom_segment(aes(x=2020, xend=2020, y=0, yend=250), linetype=2) +
+  annotate(geom = "text", x = 2020, y = 260, label = "Covid Outbreak", hjust = "right")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
         plot.subtitle = element_text(hjust=0.5)) +
   theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 
-ggplot(aes(x=Transaction_Date, y=donationCount),size=1, data=temp2) +  
+ggplot(aes(x=Fiscal.Year, y=donationCount),size=1, data=temp2) +  
+  geom_point(size=1) +
   geom_line(color="blue") +
-  labs(x="Year", y="Credit Amount")+
+  labs(x="Year", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
-  ggtitle("Average Monthly Credit Amount ", 
-          subtitle ="Based on Transaction Date")+
+  scale_x_continuous(limits = (c(2002,2022)), n.breaks = 11)+
+  ggtitle("Average Yearly Donation Count", 
+          subtitle ="Based on Fiscal Year")+
+  geom_segment(aes(x=2008, xend=2008, y=0, yend=56000), linetype=2) +
+  annotate(geom = "text", x = 2008, y = 58000, label = "Market Crash", hjust = "right")+
+  geom_segment(aes(x=2020, xend=2020, y=0, yend=56000), linetype=2) +
+  annotate(geom = "text", x = 2020, y = 58000, label = "Covid Outbreak", hjust = "right")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
         plot.subtitle = element_text(hjust=0.5)) +
@@ -382,32 +427,34 @@ ggplot(aes(x=Transaction_Date, y=donationCount),size=1, data=temp2) +
 
 # do 2017-2023 to see covid change
 
-ggplot(aes(x=Transaction_Date, y=meanCreditAmount),size=1, data=temp2) +  
+ggplot(aes(x=Fiscal.Year, y=meanCreditAmount),size=1, data=temp2) + 
+  geom_point(size=1) +
   geom_line(color="blue") +
   labs(x="Year", y="Credit Amount")+
   scale_y_continuous(labels=scales::comma)+
-  scale_x_date(limits = as.Date(c("2017-01-01","2023-04-30")))+
-  ggtitle("Average Monthly Credit Amount ", 
-          subtitle ="Based on Transaction Date")+
+  scale_x_continuous(limits = (c(2017,2022)), n.breaks = 7)+
+  ggtitle("Average Yearly Credit Amount ", 
+          subtitle ="Based on Fiscal Year")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
         plot.subtitle = element_text(hjust=0.5)) +
   theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 
-ggplot(aes(x=Transaction_Date, y=donationCount),size=1, data=temp2) +  
+ggplot(aes(x=Fiscal.Year, y=donationCount),size=1, data=temp2) +  
+  geom_point(size=1) +
   geom_line(color="blue") +
-  labs(x="Year", y="Credit Amount")+
+  labs(x="Year", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
-  scale_x_date(limits = as.Date(c("2017-01-01","2023-04-30")))+
-  ggtitle("Average Monthly Donation Count ", 
-          subtitle ="Based on Transaction Date")+
+  scale_x_continuous(limits = (c(2017,2022)), n.breaks = 7)+
+  ggtitle("Average Yearly Donation Count ", 
+          subtitle ="Based on Fiscal Year")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
         plot.subtitle = element_text(hjust=0.5)) +
   theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
-
+ 
 ```
 
 
@@ -467,7 +514,7 @@ temp6 <- DonorHistory_AF %>%
 ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6) +  
   geom_point(size=2) +
   geom_line(color="blue") +
-  labs(x="Month", y="Unique Donations")+
+  labs(x="Month", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
   ggtitle("Average Monthly Donation Count ", 
           subtitle ="Based on Transaction Date")+
@@ -488,7 +535,7 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6) +
 
 
 
-```{r}
+```{r, eval=FALSE}
 ## New reponse variables being produced for analysis:
 # 1 year max retention count (most consecutive years retained)
 # 3 year max retention count (most consecutive sets of 3 years retained)
@@ -503,8 +550,8 @@ summary(factor(Majors$School.of.Graduation))
 ```
 
 
-```{r}
-# totals
+```{r, eval=FALSE}
+# totals using major info 
 ggplot(DonorHistory_AF, aes(fill=Designation.Purpose, y=Credit.Amount, x=School.of.Graduation)) + 
   geom_bar(position="stack", stat="identity") +
   scale_fill_brewer(palette="Set1") +
