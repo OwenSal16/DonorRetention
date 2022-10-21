@@ -121,9 +121,9 @@ Addresses <- rbind(Addresses, DupAd)
 ```{r}
 Majors_new <- Majors %>%
   select(!c(4)) %>%
-  mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "Uncategorized",
+  mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "No College",
                                             TRUE ~ School.of.Graduation)) %>%
-  pivot_wider(id_cols= Entity.ID, names_from = School.of.Graduation, values_from = Major, value_fn = list, unused_fn = max)
+  pivot_wider(id_cols= Entity.ID, names_from = School.of.Graduation, values_from = Major, values_fn = list, unused_fn = max)
 
 ```
 
@@ -138,7 +138,7 @@ DonorHistory_Clean <- DonorHistory %>%
   left_join(Rel_Type_Split) %>%
   left_join(Part_Hist_Split) %>%
   left_join(Addresses) %>%
-  left_join(Majors_new) %>%
+  left_join(Majors_new, by=c('Entity.ID')) %>%
   filter(!is.na(Entity.ID))
 ```
 
@@ -173,7 +173,9 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 # 
 # RetainedByYear <- function() {
 #   uniqueEntity <- unique(DonorHistory_Clean$Entity.ID)
-#   fulldata <- data.frame(matrix(ncol = 5, nrow = 0))
+#   fulldata <- data.frame('Entity.ID'=character(), 'Year'= integer(), 
+#                          'OneYearRetention'= logical(), 'ThreeYearRetention'= logical(), 'FiveYearRetention'= logical())
+#   r = 1
 #   for (e in uniqueEntity) {
 #     entityYearsVector <- unique(findYears(e))
 #     for (i in 1:length(entityYearsVector)) {
@@ -202,8 +204,13 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 #         ThreeYear = F
 #         OneYear = F
 #       }
-#       entYear <- data.frame(e, entityYearsVector[i], OneYear,ThreeYear, FiveYear)
-#       fulldata <- rbind(fulldata, entYear)
+#       entYear <- data.frame(Entity.ID = e, Year = entityYearsVector[i], OneYearRetention = OneYear, 
+#                             ThreeYearRetention = ThreeYear, FiveYearRetention = FiveYear)
+#       fulldata <- bind_rows(fulldata, entYear)
+#       r = r + 1
+#       if(r%%10000 == 0) {
+#         print(r)
+#       }
 #     }
 #   }
 #   fulldata
