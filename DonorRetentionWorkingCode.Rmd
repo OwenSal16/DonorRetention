@@ -32,11 +32,11 @@ RetentionIndicators <- read.csv("retentionIndicators.csv")
 ### Clean retention data
 ```{r}
 Retention <- RetentionIndicators %>%
-  mutate(FiscalYear = year(ymd(entityYearsVector.i., truncated = 2)),
-         OneYear = as.numeric(OneYear),
-         ThreeYear = as.numeric(ThreeYear),
-         FiveYear = as.numeric(FiveYear)) %>%
-  select(!entityYearsVector.i.)
+  mutate(OneYear = as.numeric(OneYearRetention),
+         ThreeYear = as.numeric(ThreeYearRetention),
+         FiveYear = as.numeric(FiveYearRetention),
+         FiscalYear = year(ymd(Year, truncated = 2))) %>%
+  select(!c(OneYearRetention, ThreeYearRetention, FiveYearRetention, Year))
 
 RetentionLong <- Retention %>%
   pivot_longer(cols = c(OneYear, ThreeYear, FiveYear), names_to = "RetainedType", values_to = "RetainedCount")
@@ -222,9 +222,30 @@ DonorHistoryRetention <- DonorHistory_Clean %>%
 # b - a
 ```
 
+```{r}
+TotalsRetained <- RetentionLong %>%
+  group_by(FiscalYear, RetainedType) %>%
+  summarize(donors = length(Entity.ID), retained = sum(RetainedCount))
+  
+shift <- function(x,n) {
+  c(x[-(seq(n))], rep(NA, n))
+}
+
+TotalsRetained$retained <- shift(TotalsRetained$retained, 3)
+
+TotalsRetained$FiscalYear <- shift(TotalsRetained$FiscalYear, 3)
+
+PercentRetained <- TotalsRetained %>%
+  #filter(FiscalYear != 2023) %>%
+  mutate(PercentRetained = retained/donors)
+```
+
 ### Retention Graphs
 ```{r}
 ggplot(data = filter(Retention, FiscalYear > 2009 & FiscalYear < 2023)) +
   geom_col(aes(x = FiscalYear, y = OneYear))
+
+ggplot(data = PercentRetained) +
+  geom_col(aes(x = FiscalYear, y = PercentRetained, fill = RetainedType), position = "dodge")
 ```
 
