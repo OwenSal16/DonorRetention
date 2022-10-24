@@ -11,6 +11,7 @@ library(tidyverse)
 library(caret)
 library(randomForest)
 library(lubridate)
+library(ggthemes)
 ```
 
 ### Read in Data
@@ -236,7 +237,7 @@ TotalsRetained$retained <- shift(TotalsRetained$retained, 3)
 TotalsRetained$FiscalYear <- shift(TotalsRetained$FiscalYear, 3)
 
 PercentRetained <- TotalsRetained %>%
-  #filter(FiscalYear != 2023) %>%
+  filter(FiscalYear != 2023) %>%
   mutate(PercentRetained = retained/donors)
 ```
 
@@ -245,7 +246,17 @@ PercentRetained <- TotalsRetained %>%
 ggplot(data = filter(Retention, FiscalYear > 2009 & FiscalYear < 2023)) +
   geom_col(aes(x = FiscalYear, y = OneYear))
 
-ggplot(data = PercentRetained) +
-  geom_col(aes(x = FiscalYear, y = PercentRetained, fill = RetainedType), position = "dodge")
+ggplot(data = filter(PercentRetained, RetainedType == "OneYear")) +
+  theme_wsj() +
+  geom_col(aes(x = FiscalYear, y = PercentRetained)) +
+  geom_text(aes(x = FiscalYear, y = PercentRetained + .02, 
+                label = round(100 * PercentRetained, 1)),
+            color = "red", size = 3)  +
+  scale_y_continuous(breaks = c(0, .2, .4, .6, .8, 1), labels = c(0, 20, 40, 60, 80, 100)) +
+  ylab("Percent Retained") +
+  xlab("Fiscal Year") +
+  coord_cartesian(ylim = c(0,.80)) +
+  labs(title = "1 Year Donor Retention Over the Years") +
+  theme(title = element_text(size = 14))
 ```
 
