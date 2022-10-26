@@ -541,6 +541,53 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6) +
   theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 ```
+```{r}
+temp6Owen <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  filter(Year < 2020) %>%
+  group_by(Month) %>%
+  mutate(donationCount=n())
+
+temp6Owen2020 <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  filter(Year == 2020) %>%
+  group_by(Month) %>%
+  mutate(donationCount=n())
+
+temp6Owen2021 <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  filter(Year == 2021) %>%
+  group_by(Month) %>%
+  mutate(donationCount=n())
+
+temp6Owen2022 <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  filter(Year == 2022) %>%
+  group_by(Month) %>%
+  mutate(donationCount=n())
+
+ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6Owen) +  
+  geom_point(size=2) +
+  geom_line(color="blue") +
+  geom_line(data = temp6Owen2020, color = "red") +
+  labs(x="Month", y="Number of Donations")+
+  scale_y_continuous(labels=scales::comma)+
+  ggtitle("Average Monthly Donation Count ", 
+          subtitle ="Based on Transaction Date for Donations < $10,000")+
+  theme_stata()+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5)) +
+  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
+        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
+```
 
 
 
