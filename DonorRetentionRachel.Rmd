@@ -542,11 +542,33 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6) +
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 ```
 ```{r}
+temp6OwenAllYears <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  group_by(Month, Year) %>%
+  summarize(donationCount= n())
+
+temp6OwenAverageMonth <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  group_by(Month) %>%
+  summarize(donationCount= n() / 21)
+
 temp6Owen <- DonorHistory_AF %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
          Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
          Year = year(mdy(Transaction.Date))) %>%
   filter(Year < 2020) %>%
+  group_by(Month) %>%
+  mutate(donationCount= (n() / 18))
+
+temp6Owen2019 <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  filter(Year == 2019) %>%
   group_by(Month) %>%
   mutate(donationCount=n())
 
@@ -575,9 +597,16 @@ temp6Owen2022 <- DonorHistory_AF %>%
   mutate(donationCount=n())
 
 ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6Owen) +  
-  geom_point(size=2) +
-  geom_line(color="blue") +
+  geom_point(size=1.5, fill = "black") +
+  geom_line(color="black") +
+  geom_point(data = temp6Owen2019, fill = "pink", size = 1.5, color = "pink") +
+  geom_line(data = temp6Owen2019, color = "pink") +
+  geom_point(data = temp6Owen2020, fill = "red", size = 1.5, color = "red") +
   geom_line(data = temp6Owen2020, color = "red") +
+  geom_point(data = temp6Owen2021, fill = "forestgreen", size = 2, color = "forestgreen") +
+  geom_line(data = temp6Owen2021, color = "forestgreen") +
+  geom_point(data = temp6Owen2022, fill = "blue", size = 2, color = "blue") +
+  geom_line(data = temp6Owen2022, color = "blue") +
   labs(x="Month", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
   ggtitle("Average Monthly Donation Count ", 
@@ -587,6 +616,21 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6Owen) +
         plot.subtitle = element_text(hjust=0.5)) +
   theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
+
+ggplot(aes(x=Month, y=donationCount, group= Year), data=temp6OwenAllYears) + 
+  theme_bw() +
+  geom_line(data = filter(temp6OwenAllYears, Year < 2019), color="grey80") +
+  geom_line(data = filter(temp6OwenAllYears, Year == 2019), color="blue") +
+  geom_line(data = filter(temp6OwenAllYears, Year > 2019), color="red") +
+  geom_line(data = temp6OwenAverageMonth, aes(y = donationCount, x = Month, group = 1), inherit = FALSE) +
+  annotate("text", x = "Jun", y = 8000, label = "Pre COVID (<2019)", color = "grey50", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 7600, label = "2019", color = "blue", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 7200, label = "COVID (>2019)", color = "red", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 6800, label = "Average", color = "black", hjust = 0, vjust = 1) +
+  labs(x="Month", y="Number of Donations") +
+  ggtitle("Average Monthly Annual Fund Donation Count ", 
+          subtitle ="Based on Transaction Date for Donations < $10,000") +
+  coord_cartesian(expand = FALSE)
 ```
 
 
