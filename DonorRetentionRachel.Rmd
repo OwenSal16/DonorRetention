@@ -413,7 +413,7 @@ ggplot(aes(x=Fiscal.Year, y=donationCount),size=1, data=temp2) +
   labs(x="Year", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
   scale_x_continuous(limits = (c(2002,2022)), n.breaks = 11)+
-  ggtitle("Average Yearly Donation Count", 
+  ggtitle("Yearly Donation Count", 
           subtitle ="Based on Fiscal Year")+
   geom_segment(aes(x=2008, xend=2008, y=0, yend=56000), linetype=2) +
   annotate(geom = "text", x = 2008, y = 58000, label = "Market Crash", hjust = "right")+
@@ -448,7 +448,7 @@ ggplot(aes(x=Fiscal.Year, y=donationCount),size=1, data=temp2) +
   labs(x="Year", y="Number of Donations")+
   scale_y_continuous(labels=scales::comma)+
   scale_x_continuous(limits = (c(2017,2022)), n.breaks = 7)+
-  ggtitle("Average Yearly Donation Count ", 
+  ggtitle("Yearly Donation Count ", 
           subtitle ="Based on Fiscal Year")+
   theme_stata()+
   theme(plot.title = element_text(hjust=0.5),
@@ -526,9 +526,13 @@ temp6 <- DonorHistory_AF %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
          Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
   group_by(Month) %>%
-  mutate(donationCount=n())
+  summarise(donationCount = n())
 
-ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6) +  
+temp6_2 <- temp6 %>%
+  mutate(donationCount = case_when(Month %in% c("Oct", "Nov", "Dec") ~ donationCount/20, TRUE ~ donationCount/21 ))
+
+
+ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6_2) +  
   geom_point(size=2) +
   geom_line(color="blue") +
   labs(x="Month", y="Number of Donations")+
