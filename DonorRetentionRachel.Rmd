@@ -570,9 +570,9 @@ ggplot(aes(x=Month, y=donationCount, group= Year), data=temp6OwenAllYears) +
   geom_line(data = filter(temp6OwenAllYears, Year > 2019), color="red") +
   geom_line(data = temp6OwenAverageMonth, aes(y = donationCount, x = Month, group = 1), inherit = FALSE) +
   # annotate("rect", xmin = "Jun", xmax = "Sep", ymin = 6000, ymax = 8100, fill = "white", hjust = 1) +
-  annotate("text", x = "Jun", y = 8000, label = "Pre COVID (<2019)", color = "grey50", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 8000, label = "Pre COVID (Before 2019)", color = "grey50", hjust = 0, vjust = 1) +
   annotate("text", x = "Jun", y = 7600, label = "2019", color = "blue", hjust = 0, vjust = 1) +
-  annotate("text", x = "Jun", y = 7200, label = "COVID (>2019)", color = "red", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 7200, label = "COVID (After 2019)", color = "red", hjust = 0, vjust = 1) +
   annotate("text", x = "Jun", y = 6800, label = "Average", color = "black", hjust = 0, vjust = 1) +
   labs(x = "Month", y = "Number of Donations") +
   ggtitle("Average Monthly Annual Fund Donation Count ", 
@@ -580,7 +580,39 @@ ggplot(aes(x=Month, y=donationCount, group= Year), data=temp6OwenAllYears) +
   coord_cartesian(expand = FALSE, ylim = (c(0,8200)))
 ```
 
+```{r}
+temp6_1OwenAllYears <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  group_by(Month, Year) %>%
+  summarize(meanCreditAmount = mean(Credit.Amount)) %>%
+  filter(!(Month == "Oct" & Year == 2022))
 
+temp6_1OwenAverageMonth <- DonorHistory_AF %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE),
+         Year = year(mdy(Transaction.Date))) %>%
+  group_by(Month) %>%
+  summarize(meanCreditAmount = mean(Credit.Amount))
+
+
+ggplot(aes(x=Month, y=meanCreditAmount, group= Year), data=temp6_1OwenAllYears) + 
+  theme_bw() +
+  geom_line(data = filter(temp6_1OwenAllYears, Year < 2019), color="grey80") +
+  geom_line(data = filter(temp6_1OwenAllYears, Year == 2019), color="blue") +
+  geom_line(data = filter(temp6_1OwenAllYears, Year > 2019), color="red") +
+  geom_line(data = temp6_1OwenAverageMonth, aes(y = meanCreditAmount, x = Month, group = 1), inherit = FALSE) +
+  # annotate("rect", xmin = "Jun", xmax = "Sep", ymin = 6000, ymax = 8100, fill = "white", hjust = 1) +
+  annotate("text", x = "Jun", y = 450, label = "Pre COVID (Before 2019)", color = "grey50", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 430, label = "2019", color = "blue", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 410, label = "COVID (After 2019)", color = "red", hjust = 0, vjust = 1) +
+  annotate("text", x = "Jun", y = 390, label = "Average", color = "black", hjust = 0, vjust = 1) +
+  labs(x = "Month", y = "Amount of Donation ($)") +
+  ggtitle("Average Monthly Donation Amount ", 
+          subtitle ="Based on Transaction Date for Donations < $10,000") +
+  coord_cartesian(expand = FALSE)
+```
 
 ```{r, warning=FALSE}
 #same as plots avobe but for all donations (useful for comparison)
