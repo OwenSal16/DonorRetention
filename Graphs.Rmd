@@ -379,6 +379,8 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6_2) +
 ```
 
 
+## Owen's graphs:
+
 ```{r}
 temp6OwenAllYears <- DonorHistory_AF %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
@@ -508,10 +510,6 @@ ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp5.1) +
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 
 
-#average Donation Count by month overall- transaction date
-
-uniqueDonation <- unique(DonorHistory_AF$Transaction.ID)
-
 temp6.1 <- DonorHistoryRetention %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
          Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
@@ -534,38 +532,9 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6.1) +
 
 
 
-```{r, eval=FALSE}
-## New reponse variables being produced for analysis:
-# 1 year max retention count (most consecutive years retained)
-# 3 year max retention count (most consecutive sets of 3 years retained)
-# 5 year max retention count (most consecutive sets of 5 years retained)
-
-#zip codes and majors info coming soon - predictors
-
-head(Addresses)
-head(Majors)
-summary(factor(Addresses$State))
-summary(factor(Majors$School.of.Graduation))
-```
-
-
-```{r, eval=FALSE}
-# totals using major info 
-ggplot(DonorHistory_AF, aes(fill=Designation.Purpose, y=Credit.Amount, x=School.of.Graduation)) + 
-  geom_bar(position="stack", stat="identity") +
-  scale_fill_brewer(palette="Set1") +
-  scale_y_continuous(labels=scales::dollar_format())
-
-nb.cols2 <- 17
-mycolors2 <- colorRampPalette(brewer.pal(9, "Set1"))(nb.cols2)
-ggplot(DonorHistory_AF, aes(fill=Designation.School.Unit, y=Credit.Amount, x=School.of.Graduation)) + 
-  geom_bar(position="stack", stat="identity") +
-  scale_fill_manual(values = mycolors2) +
-  scale_y_continuous(labels=scales::dollar_format())
-```
-
 ```{r}
-
+# space for any next plot/graph
+# likely for when we do EDA for address and major data
 ```
  
 
