@@ -37,7 +37,7 @@ DonorHistory_AF <- DonorHistoryRetention[which(DonorHistoryRetention$Credit.Amou
 # EDA
 
 ## Stacked Bar Graphs
-```{r, eval=FALSE}
+```{r}
  
 # Stacked bar graph- credit amount by year grouped by designation purpose
 # Focus on Yellow because it relates to scholarships
@@ -62,7 +62,7 @@ ggplot(DonorHistory_AF, aes(fill=Designation.Purpose, y=Credit.Amount, x=Fiscal.
 
 ```
 
-```{r, eval=FALSE}
+```{r}
 # making color palette larger
 nb.cols <- 22
 mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
@@ -91,7 +91,7 @@ ggplot(DonorHistory_AF, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designa
 
 
 
-```{r, fig.width=10, eval=FALSE}
+```{r, fig.width=10}
 # Stacked bar graph- credit amount by designation school colored by year
 # More red = more recent donations
 ggplot(DonorHistoryRetention, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
@@ -115,7 +115,7 @@ ggplot(DonorHistory_AF, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designa
 ```
 
 
-```{r, fig.width=8, eval=FALSE}
+```{r, fig.width=8}
 # Stacked bar graph- credit amount by transaction type stacked by designation purpose
 # Focus on Yellow because it relates to scholarships
 ggplot(DonorHistoryRetention, aes(fill=Designation.Purpose, y=Credit.Amount, x=Transaction.Type.Code)) + 
@@ -141,7 +141,7 @@ ggplot(DonorHistory_AF, aes(fill=Designation.Purpose, y=Credit.Amount, x=Transac
 
 ## Line Graphs over Time
 
-```{r, warning=FALSE, eval=FALSE}
+```{r, warning=FALSE}
 # create temp dataframe with average credit amount and average donation count by month and year
 temp2 <- DonorHistory_AF %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
@@ -210,7 +210,7 @@ ggplot(aes(x=Transaction_Date, y=donationCount),size=1, data=temp2) +
 ```
 
 
-```{r, warning=FALSE, eval=FALSE}
+```{r, warning=FALSE}
 # create temp dataframe with average credit amount and average donation count by fiscal year
 temp3 <- DonorHistory_AF %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
@@ -308,7 +308,7 @@ ggplot(aes(x=Fiscal.Year, y=totalCreditAmount),size=1, data=temp3) +
 ```
 
 
-```{r, warning=FALSE, eval=FALSE}
+```{r, warning=FALSE}
 # create temp dataframe with average credit amount by month based on processing date
 temp4 <- DonorHistory_AF %>%
   mutate(Processing_Date  = mdy(Processing.Date),
@@ -377,6 +377,50 @@ ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6_2) +
   theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
         axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
 ```
+
+
+```{r, warning=FALSE}
+#same as plots avobe but for all donations (useful for comparison)
+temp5.1 <- DonorHistoryRetention %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
+  group_by(Month) %>%
+  mutate(meanCreditAmount=mean(Credit.Amount))
+
+ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp5.1) +  
+  geom_point(size=2) +
+  geom_line(color="blue") +
+  labs(x="Month", y="Donation Amount")+
+  scale_y_continuous(labels=scales::comma)+
+  ggtitle("Average Monthly Donation Amount ", 
+          subtitle ="Based on Transaction Date for all Donations")+
+  theme_stata()+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5)) +
+  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
+        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
+
+
+temp6.1 <- DonorHistoryRetention %>%
+  mutate(Transaction_Date  = mdy(Transaction.Date),
+         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
+  group_by(Month) %>%
+  mutate(donationCount=n())
+
+ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6.1) +  
+  geom_point(size=2) +
+  geom_line(color="blue") +
+  labs(x="Month", y="Number of Donations")+
+  scale_y_continuous(labels=scales::comma)+
+  ggtitle("Average Monthly Donation Count ", 
+          subtitle ="Based on Transaction Date for all Donations")+
+  theme_stata()+
+  theme(plot.title = element_text(hjust=0.5),
+        plot.subtitle = element_text(hjust=0.5)) +
+  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
+        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
+```
+
 
 
 ## Owen's graphs:
@@ -487,49 +531,6 @@ ggplot(data = RetDataScholPercLong) +
   labs(title = "Scholarship Donor Retention", subtitle = "Percentage of Annual Fund donors in a given year who returned in following years") +
   theme(plot.title = element_text(size = 18), plot.subtitle = element_text(size = 12), legend.position = "right", legend.title = element_blank(), text = element_text(hjust = .5))
 ```
-
-```{r, warning=FALSE}
-#same as plots avobe but for all donations (useful for comparison)
-temp5.1 <- DonorHistoryRetention %>%
-  mutate(Transaction_Date  = mdy(Transaction.Date),
-         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
-  group_by(Month) %>%
-  mutate(meanCreditAmount=mean(Credit.Amount))
-
-ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp5.1) +  
-  geom_point(size=2) +
-  geom_line(color="blue") +
-  labs(x="Month", y="Donation Amount")+
-  scale_y_continuous(labels=scales::comma)+
-  ggtitle("Average Monthly Donation Amount ", 
-          subtitle ="Based on Transaction Date for all Donations")+
-  theme_stata()+
-  theme(plot.title = element_text(hjust=0.5),
-        plot.subtitle = element_text(hjust=0.5)) +
-  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
-        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
-
-
-temp6.1 <- DonorHistoryRetention %>%
-  mutate(Transaction_Date  = mdy(Transaction.Date),
-         Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
-  group_by(Month) %>%
-  mutate(donationCount=n())
-
-ggplot(aes(x=Month, y=donationCount, group=1),size=1, data=temp6.1) +  
-  geom_point(size=2) +
-  geom_line(color="blue") +
-  labs(x="Month", y="Number of Donations")+
-  scale_y_continuous(labels=scales::comma)+
-  ggtitle("Average Monthly Donation Count ", 
-          subtitle ="Based on Transaction Date for all Donations")+
-  theme_stata()+
-  theme(plot.title = element_text(hjust=0.5),
-        plot.subtitle = element_text(hjust=0.5)) +
-  theme(axis.text.x = element_text(face="bold", color="slateblue", size=10, angle=45),
-        axis.text.y = element_text(face="bold", color="slateblue", size=10, angle=45))
-```
-
 
 
 ```{r}
