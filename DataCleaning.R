@@ -147,3 +147,68 @@ retainedAtAll <- counts %>%
 DonorHistoryRetention <- DonorHistory_Clean %>%
   mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0)) %>%
   left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
+
+
+## Create retention percentages from indicators
+## Function that takes a retention dataset and creates summarized retention percentages
+CalcRetPerc <- function(RetData) {
+  
+  ## One year retention
+  year <- c()
+  percent1 <- c()
+  for(x in 2002:2021) {
+    xEntities <- filter(RetData, FiscalYear == x)$Entity.ID
+    UniqueRetained <- RetData %>%
+      filter(FiscalYear == x+1 & Entity.ID %in% xEntities)
+    per <- length(unique(UniqueRetained$Entity.ID)) / length(xEntities)
+    percent1 <- c(percent1, per)
+    year <- c(year, x)
+  }
+  OneYearRetPer <- data.frame(year, percent1)
+  
+  ## Three year Retention
+  year <- c()
+  percent3 <- c()
+  for(x in 2002:2019) {
+    xEntities <- filter(RetData, FiscalYear == x)$Entity.ID
+    UniqueRetained <- RetData %>%
+      filter(FiscalYear %in% c(x+1, x+2, x+3) & Entity.ID %in% xEntities)
+    per <- length(unique(UniqueRetained$Entity.ID)) / length(xEntities)
+    percent3 <- c(percent3, per)
+    year <- c(year, x)
+  }
+  ThreeYearRetPer <- data.frame(year, percent3)
+  
+  ## Five Year Retention
+  year <- c()
+  percent5 <- c()
+  for(x in 2002:2017) {
+    xEntities <- filter(RetData, FiscalYear == x)$Entity.ID
+    UniqueRetained <- RetData %>%
+      filter(FiscalYear %in% c(x+1, x+2, x+3, x+4, x+5) & Entity.ID %in% xEntities)
+    per <- length(unique(UniqueRetained$Entity.ID)) / length(xEntities)
+    percent5 <- c(percent5, per)
+    year <- c(year, x)
+  }
+  FiveYearRetPer <- data.frame(year, percent5)
+  
+  RetentionDataPercents <- OneYearRetPer %>%
+    merge(ThreeYearRetPer, all.x = TRUE) %>%
+    merge(FiveYearRetPer, all.x = TRUE)
+  
+  RetentionDataPercents
+}
+
+## Running the function to pull annual fund percents
+RetentionPercents <- CalcRetPerc(Retention)
+
+## Changing the data to long format
+RetDataPercLong <- RetentionPercents %>%
+  pivot_longer(cols = c(percent1, percent3, percent5), names_to = "RetentionType", values_to = "percent")
+
+## Running the function to pull scholarship fund percents
+RetentionScholPerc <- CalcRetPerc(RetentionSchol)
+
+## Changing the data to long format
+RetDataScholPercLong <- RetentionScholPerc %>%
+  pivot_longer(cols = c(percent1, percent3, percent5), names_to = "RetentionType", values_to = "percent")

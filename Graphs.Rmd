@@ -16,39 +16,24 @@ library(ggthemes)
 library(devtools)
 ```
 
-### Read in Data
+### Read in Data from our DataCleaning.R
 ```{r}
 source('DataCleaning.R')
 head(DonorHistoryRetention)
 ```
 
 
-## UPDATE ALL GRAPHS TO ANNUAL FUND INDICATOR =1: DonorHistory_AF
+## Filter the data into specifically Annual Fund Donations (those less than $10,000)
 ```{r}
-DonorHistory_AF1 <- DonorHistoryRetention[which(DonorHistoryRetention$Annual.Fund.Idicator == '1'),]
-
-# 407 rows where Annual.Fund.Idicator == 1, but Credit.Amount > 10,000... 
-head(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 10000),])
-dim(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 10000),])
-
-# 14 rows where Annual.Fund.Idicator == 1, but Credit.Amount > 100,000- REMOVE?
-(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 100000),])
-dim(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 100000),])
-
-# 2 rows where Annual.Fund.Idicator == 1, but Credit.Amount > 1,000,000!! REMOVE!!
-head(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 1000000),])
-
-
 # make donor hist with only credit amount < 10,000
 DonorHistory_AF <- DonorHistoryRetention[which(DonorHistoryRetention$Credit.Amount < 10000),]
 ```
-####################################################################################################
-Everything before this needs to be deleted
+
 
 ## Read in Data
 ```{r}
-RetDataPercLong <- read.csv("RetDataPercLong.csv")
-RetDataScholPercLong <- read.csv("RetDataScholPercLong.csv")
+head(RetDataPercLong) 
+head(RetDataScholPercLong)
 ```
 
 
