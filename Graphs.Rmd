@@ -18,146 +18,14 @@ library(devtools)
 
 ### Read in Data
 ```{r}
-Rel_Type <- read.csv("1_4_Relationship_Type.csv")
-Part_Hist <- read.csv("1_5a_Participation_History.csv")
-Addresses <- read.csv("1_2a_Addresses.csv")
-Majors <- read.csv("1_3_Degrees.csv")
-DH1 <- read.csv("DonorHistoryFirstThree")
-DH2 <- read.csv("DonorHistorySecondThree")
-DH3 <- read.csv("DonorHistoryThirdThree")
-DH4 <- read.csv("DonorHistoryFourthThree")
-DH5 <- read.csv("DonorHistoryFifthThree")
-DH6 <- read.csv("DonorHistorySixthThree")
-DH7 <- read.csv("DonorHistoryLastTwo")
-```
-
-### Fix relationship spreadsheet
-```{r}
-Rel_Type_Split <- Rel_Type %>%
-  mutate(value = 1) %>%
-  pivot_wider(names_from = Relationship.Type, values_from = value)
-
-Rel_Type_Split[is.na(Rel_Type_Split)] <- 0 
-## https://stackoverflow.com/questions/8161836/how-do-i-replace-na-values-with-zeros-in-an-r-dataframe%5C
-```
-
-## Fix participation spreadsheet
-```{r}
-Part_Hist_Split <- Part_Hist %>%
-  select(!c(4:7)) %>%
-  mutate(Participation.Category = case_when(Participation.Category == "" ~ "Uncategorized",
-                                            TRUE ~ Participation.Category)) %>%
-  pivot_wider(names_from = Participation.Category, values_from = Activity.Name, values_fn = list)
-```
-
-### Fix addresses spreadsheet
-```{r}
-#select relevant variables
-Addresses <- Addresses %>%
-  mutate(newZip = str_extract(Zip, "\\d+?(?=-)")) %>%
-  select(Entity.ID, newZip, Country) %>%
-  rename(Zip = newZip)
-
-#find duplicate Entities
-b <- rle(sort(Addresses$Entity.ID))
-adCounts <- data.frame(ID=b$values, count=b$lengths)
-dupEID <- adCounts %>%
-  filter(count > 1) 
-
-#subset only duplicates
-DupAd <- Addresses %>%
-  filter(Entity.ID %in% dupEID$ID)
-
-#remove duplicates from full data
-Addresses <- Addresses %>%
-  filter(!(Entity.ID %in% dupEID$ID))
-
-#loop through duplicates and combine matches
-i = 1
-while (i < (nrow(DupAd))) {
-  if(DupAd$Entity.ID[i] == DupAd$Entity.ID[i+1]) {
-    if(is.na(DupAd$Zip[i]) || is.na(DupAd$Zip[i+1])) {
-      if (DupAd$Country[i] == DupAd$Country[i+1]) {
-        DupAd <- DupAd[-c(i),]
-      }
-    } else if(DupAd$Zip[i] == DupAd$Zip[i+1]) {
-      DupAd <- DupAd[-c(i),]
-    }
-  }
-  i = i + 1
-}
-
-#find remaining duplicates(couldn't be combined)
-c <- rle(sort(DupAd$Entity.ID))
-adCounts2 <- data.frame(ID=c$values, count=c$lengths)
-dupEID2 <- adCounts2 %>%
-  filter(count > 1) 
-
-#new subset of non-match duplicates
-DupAd2 <- DupAd %>%
-  filter(Entity.ID %in% dupEID2$ID)
-
-#combined duplicates
-DupAd <- DupAd %>%
-  filter(!(Entity.ID %in% dupEID2$ID))
-
-#add now combined duplicates to original data
-Addresses <- rbind(Addresses, DupAd)
-
-```
-
-###Fix majors spreadsheet
-```{r}
-# Majors_new <- Majors %>%
-#   select(!c(4)) %>%
-#   mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "Uncategorized",
-#                                             TRUE ~ School.of.Graduation)) %>%
-#   mutate(MajorWithYear)
-#   pivot_wider(names_from = School.of.Graduation, values_from = , values_fn = list)
-
-Majors_new <- Majors %>%
-  select(!c(4)) %>%
-  mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "Uncategorized",
-                                            TRUE ~ School.of.Graduation)) %>%
-  pivot_wider(id_cols= Entity.ID, names_from = School.of.Graduation, values_from = Major, values_fn = list, unused_fn = max)
-head(Majors_new)
-```
-
-### Clean and add data to Donor History
-```{r}
-DonorHistory <- cbind(DH1, DH2, DH3, DH4, DH5, DH6, DH7)
-
-remove("DH1", "DH2", "DH3", "DH4", "DH5", "DH6", "DH7")
-
-DonorHistory_Clean <- DonorHistory %>%
-  select(!3) %>%
-  left_join(Rel_Type_Split) %>%
-  left_join(Part_Hist_Split) %>%
-  left_join(Addresses) %>%
-  #left_join(Majors) %>%
-  filter(!is.na(Entity.ID))
-```
-
-### Create active donor and retention variables
-```{r}
-a <- rle(sort(DonorHistory_Clean$Entity.ID))
-counts <- data.frame(ID=a$values, count=a$lengths)
-
-retainedAtAll <- counts %>%
-  mutate(retainedAtAll = ifelse(count > 1, 1, 0)) %>%
-  select(!count)
-
-## https://stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
-
-DonorHistoryRetention <- DonorHistory_Clean %>%
-  mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0)) %>%
-  left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
+source('DataCleaning.R')
+head(DonorHistoryRetention)
 ```
 
 
 ## UPDATE ALL GRAPHS TO ANNUAL FUND INDICATOR =1: DonorHistory_AF
 ```{r}
-DonorHistory_AF1 <- DonorHistory_Clean[which(DonorHistory_Clean$Annual.Fund.Idicator == '1'),]
+DonorHistory_AF1 <- DonorHistoryRetention[which(DonorHistoryRetention$Annual.Fund.Idicator == '1'),]
 
 # 407 rows where Annual.Fund.Idicator == 1, but Credit.Amount > 10,000... 
 head(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 10000),])
@@ -172,7 +40,7 @@ head(DonorHistory_AF1[which(DonorHistory_AF1$Credit.Amount > 1000000),])
 
 
 # make donor hist with only credit amount < 10,000
-DonorHistory_AF <- DonorHistory_Clean[which(DonorHistory_Clean$Credit.Amount < 10000),]
+DonorHistory_AF <- DonorHistoryRetention[which(DonorHistoryRetention$Credit.Amount < 10000),]
 ```
 ####################################################################################################
 Everything before this needs to be deleted
@@ -193,7 +61,7 @@ library(ggplot2)
  
 # Stacked bar graph- credit amount by year grouped by designation purpose
 # Focus on Yellow because it relates to scholarships
-ggplot(DonorHistory_Clean, aes(fill=Designation.Purpose, y=Credit.Amount, x=Fiscal.Year)) + 
+ggplot(DonorHistoryRetention, aes(fill=Designation.Purpose, y=Credit.Amount, x=Fiscal.Year)) + 
   geom_bar(position="stack", stat="identity") +
   ggtitle("Donation Amount over Time by Purpose", subtitle = "All Donations")+
   labs(x="Fiscal Year", y="Credit Amount", fill="Designation Purpose")+
@@ -220,7 +88,7 @@ mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
 
 # Stacked bar graph- credit amount by designation purpose colored by year
 # More red = more recent donations
-ggplot(DonorHistory_Clean, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.Purpose)) + 
+ggplot(DonorHistoryRetention, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.Purpose)) + 
   geom_bar(position="stack", stat="identity") +
   ggtitle("Total Donation Amount by Purpose", subtitle = "All Donations")+
   labs(x="Designation Purpose", y="Credit Amount", fill="Fiscal Year")+
@@ -249,7 +117,7 @@ mycolors <- colorRampPalette(brewer.pal(8, "Spectral"))(nb.cols)
 
 # Stacked bar graph- credit amount by designation school colored by year
 # More red = more recent donations
-ggplot(DonorHistory_Clean, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
+ggplot(DonorHistoryRetention, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designation.School.Unit)) + 
   geom_bar(position="stack", stat="identity") +
   ggtitle("Total Donation Amount by School", subtitle = "All Donations")+
   labs(x="Designation School", y="Credit Amount", fill="Fiscal Year")+
@@ -273,7 +141,7 @@ ggplot(DonorHistory_AF, aes(fill=factor(Fiscal.Year), y=Credit.Amount, x=Designa
 ```{r, fig.width=8}
 # Stacked bar graph- credit amount by transaction type stacked by designation purpose
 # Focus on Yellow because it relates to scholarships
-ggplot(DonorHistory_Clean, aes(fill=Designation.Purpose, y=Credit.Amount, x=Transaction.Type.Code)) + 
+ggplot(DonorHistoryRetention, aes(fill=Designation.Purpose, y=Credit.Amount, x=Transaction.Type.Code)) + 
   geom_bar(position="stack", stat="identity") +
   ggtitle("Donation Amount per Transaction Type by Purpose", subtitle = "All Donations")+
   labs(x="Transaction Type", y="Credit Amount", fill="Designation Purpose")+
@@ -658,7 +526,7 @@ ggplot(data = RetDataScholPercLong) +
 
 ```{r, warning=FALSE}
 #same as plots avobe but for all donations (useful for comparison)
-temp5.1 <- DonorHistory_Clean %>%
+temp5.1 <- DonorHistoryRetention %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
          Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
   group_by(Month) %>%
@@ -682,7 +550,7 @@ ggplot(aes(x=Month, y=meanCreditAmount, group=1),size=1, data=temp5.1) +
 
 uniqueDonation <- unique(DonorHistory_AF$Transaction.ID)
 
-temp6.1 <- DonorHistory_Clean %>%
+temp6.1 <- DonorHistoryRetention %>%
   mutate(Transaction_Date  = mdy(Transaction.Date),
          Month = month(mdy(Transaction.Date), label=TRUE, abbr=TRUE)) %>%
   group_by(Month) %>%
@@ -738,54 +606,4 @@ ggplot(DonorHistory_AF, aes(fill=Designation.School.Unit, y=Credit.Amount, x=Sch
 
 ```
  
-
-
-
-
-# random forest
-```{r random forest, eval=FALSE}
-# Installing package
-#install.packages("caTools")       # For sampling the dataset
-#install.packages("randomForest")  # For implementing random forest algorithm
-  
-# Loading package
-library(caTools)
-library(randomForest)
-
-# Splitting data in train and test data
-split <- sample.split(DonorHistory_AF, SplitRatio = 0.7)
-split
-  
-train <- subset(DonorHistory_Clean, split == "TRUE")
-test <- subset(DonorHistory_Clean, split == "FALSE")
-  
-# Fitting Random Forest to the train dataset
-set.seed(120)  # Setting seed
-classifier_RF = randomForest(x = train[-5],
-                             y = train$yvar, #add the yvar of Retention when created
-                             ntree = 500)
-  
-classifier_RF
-  
-# Predicting the Test set results
-y_pred = predict(classifier_RF, newdata = test[-5])
-  
-# Confusion Matrix
-confusion_mtx = table(test[, 5], y_pred)
-confusion_mtx
-  
-# Plotting model
-plot(classifier_RF)
-  
-# Importance plot
-importance(classifier_RF)
-  
-# Variable importance plot
-varImpPlot(classifier_RF)
-
-```
- 
-
-
-
 

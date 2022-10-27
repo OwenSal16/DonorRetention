@@ -147,5 +147,3 @@ retainedAtAll <- counts %>%
 DonorHistoryRetention <- DonorHistory_Clean %>%
   mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0)) %>%
   left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
- 
-write_csv(DonorHistoryRetention, "DonorHistory_all.csv")
