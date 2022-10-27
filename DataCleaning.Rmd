@@ -300,5 +300,5 @@ RetDataScholPercLong <- RetentionScholPerc %>%
   pivot_longer(cols = c(percent1, percent3, percent5), names_to = "RetentionType", values_to = "percent")
 
 write_csv(RetDataPercLong, "RetDataPercLong.csv")
-write_csv(RetentionScholPerc, "RetentionScholPerc.csv")
+write_csv(RetentionScholPerc, "RetentionScholPercLong.csv")
 ```
