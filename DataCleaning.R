@@ -112,6 +112,8 @@ Addresses <- rbind(Addresses, DupAd)
 
 
 ### Fix majors spreadsheet
+# Separates majors into respective schools and lists them in new columns
+# Year is saved as the most recent (max) year present
 Majors_new <- Majors %>%
   select(!c(4)) %>%
   mutate(School.of.Graduation = case_when(School.of.Graduation == "" ~ "No College",
@@ -212,3 +214,74 @@ RetentionScholPerc <- CalcRetPerc(RetentionSchol)
 ## Changing the data to long format
 RetDataScholPercLong <- RetentionScholPerc %>%
   pivot_longer(cols = c(percent1, percent3, percent5), names_to = "RetentionType", values_to = "percent")
+
+
+##### Code below was used to generate the Retention Variables. 
+##### Generated data has been saved as csv files and saved to the git 
+
+# # function takes Entity.ID and finds unique values of Year for when a given person has donated
+# findYears <- function(e) {
+#   entityYears <- DonorHistory_CLean %>%
+#     filter(Entity.ID == e) %>%
+#     select(Fiscal.Year) %>%
+#     arrange(Fiscal.Year)
+#   entityYearsVector = as.vector(entityYears[,1])
+#   # Years are returned as a sorted vector
+#   entityYearsVector
+# }
+# 
+# # function generates a data frame with all unique combinations of Entity.ID and Year with newly assigned retention variables
+# RetainedByYear <- function() {
+#   uniqueEntity <- unique(DonorHistory_Clean$Entity.ID)
+#   fulldata <- data.frame('Entity.ID'=character(), 'Year'= integer(),
+#                          'OneYearRetention'= logical(), 'ThreeYearRetention'= logical(), 'FiveYearRetention'= logical())
+#   r = 1
+#   for (e in uniqueEntity) {
+#     entityYearsVector <- unique(findYears(e))
+#     # if the year is the first year present in the vector, all retention values must be false
+#     for (i in 1:length(entityYearsVector)) {
+#       if (i == 1) {
+#         OneYear = F
+#         ThreeYear = F
+#         FiveYear = F
+#       }
+#       # OneYearRetention requires that the year previous be present in the data
+#       else if(entityYearsVector[i] - entityYearsVector[i-1] == 1) {
+#         OneYear = T
+#         ThreeYear = T
+#         FiveYear = T
+#       }
+#       # ThreeYearRetention requires that any single year within the previous three be present
+#       else if (entityYearsVector[i] - entityYearsVector[i-1] <= 3) {
+#         ThreeYear = T
+#         FiveYear = T
+#         OneYear = F
+#       }
+#       # FiveYearRetention requires that any single year within the previous five be present
+#       else if (entityYearsVector[i] - entityYearsVector[i-1] <= 5) {
+#         FiveYear = T
+#         ThreeYear = F
+#         OneYear = F
+#       }
+#       else {
+#         FiveYear = F
+#         ThreeYear = F
+#         OneYear = F
+#       }
+#       #combine values and append to full data
+#       entYear <- data.frame(Entity.ID = e, Year = entityYearsVector[i], OneYearRetention = OneYear,
+#                             ThreeYearRetention = ThreeYear, FiveYearRetention = FiveYear)
+#       fulldata <- bind_rows(fulldata, entYear)
+#       
+#       # row marker to help estimate run time
+#       r = r + 1
+#       if(r%%10000 == 0) {
+#         print(r)
+#       }
+#     }
+#   }
+#   fulldata
+# }
+# 
+# byYear2 <- RetainedByYear()
+# head(byYear)
