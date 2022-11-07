@@ -132,6 +132,7 @@ DonorHistory_Clean <- DonorHistory %>%
   left_join(Part_Hist_Split) %>%
   left_join(Addresses) %>%
   left_join(Majors_new, by=c('Entity.ID')) %>%
+  left_join(RetentionIndicators, by=c('Entity.ID', 'Fiscal.Year' = 'Year')) %>%
   filter(!is.na(Entity.ID))
 
 
