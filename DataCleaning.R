@@ -184,7 +184,7 @@ DonorHistoryRetention <- DonorHistoryRetention %>%
   mutate(RC = ifelse(RC == "NULL",0, 1)) %>%
   mutate(NoCollege = ifelse(`No College` == "NULL",0, 1)) %>%
   mutate(YearsSinceGrad = Fiscal.Year - Degree.Year) %>%
-  select(!Uncategorized, !`No College`)
+  select(-c(Uncategorized, `No College`))
 
 DonorHistoryRetention$USindicator <- ifelse(DonorHistoryRetention$Country == '', 1,0)
 DonorHistoryRetention$Country <- ifelse(DonorHistoryRetention$Country == '', 'USA', DonorHistoryRetention$Country)
