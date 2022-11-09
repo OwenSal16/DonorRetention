@@ -134,7 +134,7 @@ DonorHistory_Clean <- DonorHistory %>%
   left_join(Addresses) %>%
   left_join(Majors_new, by=c('Entity.ID')) %>%
   left_join(RetentionIndicators, by=c('Entity.ID', 'Fiscal.Year' = 'Year')) %>%
-  left_join(ZipCodes, by('Zip' = 'zipcode')) %>%
+  left_join(ZipCodes, by = c('Zip' = 'zipcode')) %>%
   filter(!is.na(Entity.ID)) %>%
   select(!Zip)
 
