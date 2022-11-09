@@ -20,6 +20,7 @@ DH6 <- read.csv("DonorHistorySixthThree")
 DH7 <- read.csv("DonorHistoryLastTwo")
 RetentionIndicators <- read.csv("retentionIndicatorsAnnualFund.csv")
 ScholarshipRetention <- read.csv("retentionIndicatorsScholarship.csv")
+ZipCodes <- read.csv("zip_data.csv")
 
 ### Clean retention data
 Retention <- RetentionIndicators %>%
@@ -44,7 +45,7 @@ Rel_Type_Split <- Rel_Type %>%
   mutate(value = 1) %>%
   pivot_wider(names_from = Relationship.Type, values_from = value)
 
-Rel_Type_Split[is.na(Rel_Type_Split)] <- 0 
+Rel_Type_Split[is.na(Rel_Type_Split)] <- 0
 ## https://stackoverflow.com/questions/8161836/how-do-i-replace-na-values-with-zeros-in-an-r-dataframe%5C
 
 
@@ -67,7 +68,7 @@ Addresses <- Addresses %>%
 b <- rle(sort(Addresses$Entity.ID))
 adCounts <- data.frame(ID=b$values, count=b$lengths)
 dupEID <- adCounts %>%
-  filter(count > 1) 
+  filter(count > 1)
 
 #subset only duplicates
 DupAd <- Addresses %>%
@@ -96,7 +97,7 @@ while (i < (nrow(DupAd))) {
 c <- rle(sort(DupAd$Entity.ID))
 adCounts2 <- data.frame(ID=c$values, count=c$lengths)
 dupEID2 <- adCounts2 %>%
-  filter(count > 1) 
+  filter(count > 1)
 
 #new subset of non-match duplicates
 DupAd2 <- DupAd %>%
@@ -133,7 +134,9 @@ DonorHistory_Clean <- DonorHistory %>%
   left_join(Addresses) %>%
   left_join(Majors_new, by=c('Entity.ID')) %>%
   left_join(RetentionIndicators, by=c('Entity.ID', 'Fiscal.Year' = 'Year')) %>%
-  filter(!is.na(Entity.ID))
+  left_join(ZipCodes, by('Zip' = 'zipcode')) %>%
+  filter(!is.na(Entity.ID)) %>%
+  select(!Zip)
 
 
 ### Create active donor and retention variables
@@ -150,6 +153,43 @@ retainedAtAll <- counts %>%
 DonorHistoryRetention <- DonorHistory_Clean %>%
   mutate(Active = ifelse(Fiscal.Year %in% c(2022, 2023), 1, 0)) %>%
   left_join(retainedAtAll, by = c("Entity.ID" = "ID"))
+
+
+
+DonorHistoryRetention <- DonorHistoryRetention %>%
+  mutate(SOROR = ifelse(SOROR == "NULL",0, 1)) %>%
+  mutate(ALUEV = ifelse(ALUEV == "NULL",0, 1)) %>%
+  mutate(FRTTY = ifelse(FRTTY == "NULL",0, 1)) %>%
+  mutate(SRVCE = ifelse(SRVCE == "NULL",0, 1)) %>%
+  mutate(UncatAct = ifelse(Uncategorized == "NULL",0, 1)) %>%
+  mutate(CLBSP = ifelse(CLBSP == "NULL",0, 1)) %>%
+  mutate(SPRTS = ifelse(SPRTS == "NULL",0, 1)) %>%
+  mutate(ORGZS = ifelse(ORGZS == "NULL",0, 1)) %>%
+  mutate(ADV = ifelse(ADV == "NULL",0, 1)) %>%
+  mutate(LEAD = ifelse(LEAD == "NULL",0, 1)) %>%
+  mutate(MUSIC = ifelse(MUSIC == "NULL",0, 1)) %>%
+  mutate(MILIT = ifelse(MILIT == "NULL",0, 1)) %>%
+  mutate(GOVT = ifelse(GOVT == "NULL",0, 1)) %>%
+  mutate(REGOF = ifelse(REGOF == "NULL",0, 1)) %>%
+  mutate(TRAVL = ifelse(TRAVL == "NULL",0, 1)) %>%
+  mutate(STATE = ifelse(STATE == "NULL",0, 1)) %>%
+  mutate(REUN = ifelse(REUN == "NULL",0, 1)) %>%
+  mutate(CHAPT = ifelse(CHAPT == "NULL",0, 1)) %>%
+  mutate(AS = ifelse(AS == "NULL",0, 1)) %>%
+  mutate(FA = ifelse(FA == "NULL",0, 1)) %>%
+  mutate(BU = ifelse(BU == "NULL",0, 1)) %>%
+  mutate(EA = ifelse(EA == "NULL",0, 1)) %>%
+  mutate(AP = ifelse(AP == "NULL",0, 1)) %>%
+  mutate(IS = ifelse(IS == "NULL",0, 1)) %>%
+  mutate(RC = ifelse(RC == "NULL",0, 1)) %>%
+  mutate(NoCollege = ifelse(`No College` == "NULL",0, 1)) %>%
+  mutate(YearsSinceGrad = Fiscal.Year - Degree.Year) %>%
+  select(!Uncategorized, !`No College`)
+
+DonorHistoryRetention$USindicator <- ifelse(DonorHistoryRetention$Country == '', 1,0)
+DonorHistoryRetention$Country <- ifelse(DonorHistoryRetention$Country == '', 'USA', DonorHistoryRetention$Country)
+DonorHistoryRetention$StateIndicator <- ifelse(DonorHistoryRetention$state_abbr == 'OH', 1, 0)
+
 
 
 ## Create retention percentages from indicators
@@ -217,8 +257,8 @@ RetDataScholPercLong <- RetentionScholPerc %>%
   pivot_longer(cols = c(percent1, percent3, percent5), names_to = "RetentionType", values_to = "percent")
 
 
-##### Code below was used to generate the Retention Variables. 
-##### Generated data has been saved as csv files and saved to the git 
+##### Code below was used to generate the Retention Variables.
+##### Generated data has been saved as csv files and saved to the git
 
 # # function takes Entity.ID and finds unique values of Year for when a given person has donated
 # findYears <- function(e) {
@@ -230,7 +270,7 @@ RetDataScholPercLong <- RetentionScholPerc %>%
 #   # Years are returned as a sorted vector
 #   entityYearsVector
 # }
-# 
+#
 # # function generates a data frame with all unique combinations of Entity.ID and Year with newly assigned retention variables
 # RetainedByYear <- function() {
 #   uniqueEntity <- unique(DonorHistory_Clean$Entity.ID)
@@ -273,7 +313,7 @@ RetDataScholPercLong <- RetentionScholPerc %>%
 #       entYear <- data.frame(Entity.ID = e, Year = entityYearsVector[i], OneYearRetention = OneYear,
 #                             ThreeYearRetention = ThreeYear, FiveYearRetention = FiveYear)
 #       fulldata <- bind_rows(fulldata, entYear)
-#       
+#      
 #       # row marker to help estimate run time
 #       r = r + 1
 #       if(r%%10000 == 0) {
@@ -283,6 +323,6 @@ RetDataScholPercLong <- RetentionScholPerc %>%
 #   }
 #   fulldata
 # }
-# 
+#
 # byYear2 <- RetainedByYear()
 # head(byYear)
